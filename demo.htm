@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html manifest="web.appcache" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><title>Gapless 5 - Demonstration Page</title>
+	<meta name="viewport" content="width=400">
+	<link rel="stylesheet" href="demo_files/gapless5.css" type="text/css"><script id="umatrix-ua-spoofer" type="text/javascript"> ;(function() { 
+     try { 
+         /* https://github.com/gorhill/uMatrix/issues/61#issuecomment-63814351 */ 
+         var navigator = window.navigator; 
+         var spoofedUserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0"; 
+         if ( spoofedUserAgent === navigator.userAgent ) { 
+             return; 
+         } 
+         var pos = spoofedUserAgent.indexOf('/'); 
+         var appName = pos === -1 ? '' : spoofedUserAgent.slice(0, pos); 
+         var appVersion = pos === -1 ? spoofedUserAgent : spoofedUserAgent.slice(pos + 1); 
+         Object.defineProperty(navigator, 'userAgent', { get: function(){ return spoofedUserAgent; } }); 
+         Object.defineProperty(navigator, 'appName', { get: function(){ return appName; } }); 
+         Object.defineProperty(navigator, 'appVersion', { get: function(){ return appVersion; } }); 
+     } catch (e) { 
+     } 
+ })();</script>
+	<script src="demo_files/jquery-1.js" language="JavaScript" type="text/javascript"></script>
+	<script src="demo_files/gapless5.js" language="JavaScript" type="text/javascript"></script>
+
+  <style type="text/css">
+
+  body {
+    font-family: Arial, Helvetica, Geneva, sans-serif;
+    margin-left: 2em;
+  }
+  h1,h2,h3,h4,h5 {
+  	font-weight: 500;
+  	margin-bottom: 0;
+  }
+  h4 {
+  	margin-top: 10px;
+  	margin-bottom: 10px;
+  }
+  a {
+  	text-decoration: none;
+  }
+  table {
+  	border: 1px solid #000;
+  	padding: 0 1em 1em 1em;
+  	width: 275px;
+  }
+  td {
+  	padding: 0;
+  	margin: 0;
+  }
+  table td:nth-child(1) {
+  	vertical-align: top;
+  }
+  table td:nth-child(2) {
+  	vertical-align: top;
+  	padding-left: 2em;
+  }
+  p {
+  	font-size: 75%;
+  }
+  ul, li {
+  	font-size: 80%;
+  	list-style-type: none;
+  	padding-left: 0;
+  	margin-bottom: 0;
+  }
+
+  #pc-firefox-message {
+    padding-top:1em;
+    font-size: 80%;
+    display: none;
+    font-style: italic;
+  }
+
+  </style>
+
+</head>
+<body>
+
+  <h1>Gapless 5</h1>
+  <small>A gapless JavaScript/CSS audio player for HTML5
+  <p>Learn more and download from <a href="https://github.com/regosen/Gapless-5">Github Page</a></p>
+  </small>
+  <table>
+  	<tbody><tr><td>
+ 		<h4>Drum Loop</h4>
+		<span id="g5-drums1"><div class="g5position"><span id="currentPosition122903">00:00.00</span> | <span id="totalPosition122903">00:03.56</span> | <span id="trackIndex122903">1</span>/<span id="tracks122903">1</span></div><div class="g5inside"><div class="g5transport"><div class="g5meter"><span id="loaded-span122903" style="width: 111px;"></span></div><input class="transportbar g5meter-1pxup" name="transportbar" id="transportbar122903" min="0" max="65535" value="0" oninput="GAPLESS5_PLAYERS[122903].scrub(this.value);" onmousedown="GAPLESS5_PLAYERS[122903].onStartedScrubbing();" ontouchstart="GAPLESS5_PLAYERS[122903].onStartedScrubbing();" onmouseup="GAPLESS5_PLAYERS[122903].onFinishedScrubbing();" ontouchend="GAPLESS5_PLAYERS[122903].onFinishedScrubbing();" type="range"></div><div class="g5buttons g5buttons-1pxup" id="g5buttons122903"><button class="g5button g5prev enabled" id="prev122903"></button><button class="g5button g5play enabled" id="play122903"></button><button class="g5button g5stop enabled" id="stop122903"></button><button class="g5button g5next enabled" id="next122903"></button><input class="volume" name="gain" min="0" max="65535" value="65535" oninput="GAPLESS5_PLAYERS[122903].setGain(this.value);" type="range"></div></div></span></td><td>
+		<p>Keystrokes:</p>
+		<ul>
+			<li>1: cue</li>
+			<li>2: play/pause</li>
+			<li>3: stop</li>
+		</ul>
+	</td></tr>
+
+</tbody></table><br><table>
+
+  	<tbody><tr><td>
+	 	<h4>Synth Pads</h4>
+		<span id="g5-synths"><div class="g5position"><span id="currentPosition101582">00:00.00</span> | <span id="totalPosition101582">00:03.55</span> | <span id="trackIndex101582">1</span>/<span id="tracks101582">3</span></div><div class="g5inside"><div class="g5transport"><div class="g5meter"><span id="loaded-span101582" style="width: 111px;"></span></div><input class="transportbar g5meter-1pxup" name="transportbar" id="transportbar101582" min="0" max="65535" value="0" oninput="GAPLESS5_PLAYERS[101582].scrub(this.value);" onmousedown="GAPLESS5_PLAYERS[101582].onStartedScrubbing();" ontouchstart="GAPLESS5_PLAYERS[101582].onStartedScrubbing();" onmouseup="GAPLESS5_PLAYERS[101582].onFinishedScrubbing();" ontouchend="GAPLESS5_PLAYERS[101582].onFinishedScrubbing();" type="range"></div><div class="g5buttons g5buttons-1pxup" id="g5buttons101582"><button class="g5button g5prev enabled" id="prev101582"></button><button class="g5button g5play enabled" id="play101582"></button><button class="g5button g5stop enabled" id="stop101582"></button><button class="g5button g5next enabled" id="next101582"></button><input class="volume" name="gain" min="0" max="65535" value="65535" oninput="GAPLESS5_PLAYERS[101582].setGain(this.value);" type="range"></div></div></span></td><td>
+		<p>Keystrokes:</p>
+		<ul>
+			<li>6: prev track</li>
+			<li>7: cue</li>
+			<li>8: play/pause</li>
+			<li>9: stop</li>
+			<li>0: next track</li>
+		</ul>
+	</td></tr>
+
+</tbody></table><br><table>
+
+  	<tbody><tr><td>
+	  	<h4>Clap</h4>
+		<span id="g5-clap"><div class="g5position"><span id="currentPosition70836">00:00.00</span> | <span id="totalPosition70836">00:00.17</span> | <span id="trackIndex70836">1</span>/<span id="tracks70836">1</span></div><div class="g5inside"><div class="g5transport"><div class="g5meter"><span id="loaded-span70836" style="width: 111px;"></span></div><input class="transportbar g5meter-1pxup" name="transportbar" id="transportbar70836" min="0" max="65535" value="0" oninput="GAPLESS5_PLAYERS[70836].scrub(this.value);" onmousedown="GAPLESS5_PLAYERS[70836].onStartedScrubbing();" ontouchstart="GAPLESS5_PLAYERS[70836].onStartedScrubbing();" onmouseup="GAPLESS5_PLAYERS[70836].onFinishedScrubbing();" ontouchend="GAPLESS5_PLAYERS[70836].onFinishedScrubbing();" type="range"></div><div class="g5buttons g5buttons-1pxup" id="g5buttons70836"><button class="g5button g5prev disabled" id="prev70836"></button><button class="g5button g5play enabled" id="play70836"></button><button class="g5button g5stop enabled" id="stop70836"></button><button class="g5button g5next disabled" id="next70836"></button><input class="volume" name="gain" min="0" max="65535" value="65535" oninput="GAPLESS5_PLAYERS[70836].setGain(this.value);" type="range"></div></div></span></td><td>
+		<p>Keystrokes:</p>
+		<ul>
+			<li>spacebar: cue</li>
+		</ul>
+	</td></tr>
+
+</tbody></table>
+
+<div style="display: block;" id="pc-firefox-message">
+PC Firefox users: Please use Chrome for shorter latency.
+</div>
+
+	<script type="text/javascript"><!--
+
+    var userAgentLower = navigator.userAgent.toLowerCase();
+    var isPC = userAgentLower.indexOf('windows') >= 0;
+    var isFirefox = userAgentLower.indexOf('firefox') >= 0;
+    if (isFirefox && isPC)
+    {
+      $("#pc-firefox-message").css("display", "block");
+    }
+
+		var player1 = new Gapless5("g5-drums1", {
+			loop: true, 
+			tracks: "psounds/Drumloop.wav", 
+			mapKeys: {cue: "1", playpause: "2", stop: "3"}
+		});
+
+		var player2 = new Gapless5("g5-synths", {
+			loop: true, 
+			tracks: ["psounds/Synth1.wav","psounds/Synth4.wav"],
+			mapKeys: {prevtrack: "6", cue: "7", playpause: "8", stop: "9", next: "0"}
+		});
+    player2.insertTrack(1,"psounds/Synth2.wav");
+    //player2.removeAllTracks(3);
+
+		var player3 = new Gapless5("g5-clap", {
+			tracks: "psounds/Clap.wav",
+			mapKeys: {cue: " "}
+		});
+	--></script>
+
+</body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" manifest="web.appcache">
+<head><title>loopplayer</title>
+  <meta name="viewport" content="width=400" />
+  <link rel="stylesheet" href="include/gapless5.css" type="text/css" />
+  <script src="include/jquery-2.1.4.min.js" language="JavaScript" type="text/javascript"></script>
+  <script src="include/gapless5.js" language="JavaScript" type="text/javascript"></script>
+</head>
+<body>
+
+<h1>loopplayer</h1>
+<span id="sine" />
+  <script type="text/javascript"><!--
+
+    var player1 = new Gapless5("sine", {
+      loop: true, 
+      tracks: "sounds/sine.wav", 
+      // mapKeys: {cue: " ", playpause: "2", stop: "3"}
+    });
+
+  --></script>
+</body>
+</html>

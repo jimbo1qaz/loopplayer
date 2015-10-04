@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>loopplayer WebAudio</title>
+		<script src="include/URI.js"></script>
+		<script src="loopplayer.js"></script>
+		
+		<script>
+			var loopplayer = new LoopPlayer('play-pause', 'pulse.0.48000.wav',
+			  loaded_callback=function() {
+			  	document.getElementById("loading").innerHTML = "Loaded."
+			  } );
+		</script>
+		<style type="text/css">
+			table {
+				border-collapse: collapse;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<table><tr>
+			<td><button id="play-pause">Play</button></td>
+		</tr></table>
+
+		<p id="loading">Loading...</p>
+
+	</body>
+</html>

@@ -43,18 +43,21 @@ function LoopPlayer(url, loaded_callback) {
 
 	this.source = null;
 
+	this.loopStart = null;
+	this.loopEnd = null;
+	
 	this.initTime = 0;
 	this.pause_offset = 0;
 
 	// fuck Javascript
 
 	this.loaded = function() {
-		return that.data != null;
+		return this.data != null;
 	}
 
 	this.getFile = function(callback) {
 		var request = new XMLHttpRequest();
-		var url = that.url;
+		var url = this.url;
 		request.open("GET", url, true);
 		request.responseType = "arraybuffer";
 
@@ -71,21 +74,18 @@ function LoopPlayer(url, loaded_callback) {
 		  };
 		request.send();
 
-		that.parseLoopPoints();
+		this.parseLoopPoints();
 	}
 
 	this.parseLoopPoints = function() {
-		var uri = new URI(that.url);
+		var uri = new URI(this.url);
 
 		var filename = arrayGet(uri.path().split('/'), -1);
 
 		var timeArray = filename.split(LOOP_SEPARATOR);
 
-		var loopStart = arrayGet(timeArray, -2 - LOOP_END_SKIP);
-		var loopEnd = arrayGet(timeArray, -1 - LOOP_END_SKIP);
-
-		alert("Loop points: {0}, {1}"
-			.format(String(loopStart), String(loopEnd)));
+		this.loopStart = arrayGet(timeArray, -2 - LOOP_END_SKIP);
+		this.loopEnd = arrayGet(timeArray, -1 - LOOP_END_SKIP);
 	}
 
 
@@ -100,10 +100,10 @@ function LoopPlayer(url, loaded_callback) {
 
 
 	this.play = function() {
-		if (!that.loaded()) return;
+		if (!this.loaded()) return;
 
-		var source = that.source = ctx.createBufferSource();
-		source.buffer = that.data;
+		var source = this.source = ctx.createBufferSource();
+		source.buffer = this.data;
 		source.loop = true;
 		source.connect(ctx.destination);
 
@@ -112,29 +112,29 @@ function LoopPlayer(url, loaded_callback) {
 		  }
 
 
-		source.start(0, offset = that.pause_offset);
-		that.initTime = ctx.currentTime;
+		source.start(0, offset = this.pause_offset);
+		this.initTime = ctx.currentTime;
 
-		that.playing = true;
+		this.playing = true;
 	}
 
 	this.pause = function() {
-		if (!that.loaded()) return;
-		that.pause_offset = that.source.playTime();
-		that.source.stop(0);
-		that.source = null;
+		if (!this.loaded()) return;
+		this.pause_offset = this.source.playTime();
+		this.source.stop(0);
+		this.source = null;
 
-		that.playing = false;
+		this.playing = false;
 	}
 
 	this.toggle = function(t) {
-		if (that.playing) {
-			that.pause();
+		if (this.playing) {
+			this.pause();
 		} else {
-			that.play();
+			this.play();
 		}
 
-		t.innerHTML = that.playing ? "Pause" : "Play";
+		t.innerHTML = this.playing ? "Pause" : "Play";
 	}
 
 }

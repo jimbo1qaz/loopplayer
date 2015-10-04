@@ -4,6 +4,9 @@
 var LOOP_SEPARATOR = '.';
 var LOOP_END_SKIP = (LOOP_SEPARATOR === '.' ? 1 : 0);
 
+var console = console || {
+    "log": function(stuff) {}
+};
 
 // First, checks if it isn't implemented yet.
 if (!String.prototype.format) {
@@ -32,8 +35,11 @@ function arrayGet(array, idx) {
 	}
 }
 
+function arrayGetLoop(array, idx) {
+	return Number(array[array.length + idx - LOOP_END_SKIP]);
+}
 
-function LoopPlayer(url, loaded_callback) {
+function LoopPlayer(url, loadedCallback) {
 	var ctx = this.ctx = new AudioContext();
 	var that = this;
 
@@ -43,11 +49,12 @@ function LoopPlayer(url, loaded_callback) {
 
 	this.source = null;
 
+	this.sampleRate = null;
 	this.loopStart = null;
 	this.loopEnd = null;
-	
+
 	this.initTime = 0;
-	this.pause_offset = 0;
+	this.pauseOffset = 0;
 
 	// fuck Javascript
 
@@ -55,7 +62,11 @@ function LoopPlayer(url, loaded_callback) {
 		return this.data != null;
 	}
 
-	this.getFile = function(callback) {
+	// Load the audio data from URL.
+	// It will be resampled to ctx.sampleRate.
+	// Set data -> this.data.
+
+	this.loadFile = function() {
 		var request = new XMLHttpRequest();
 		var url = this.url;
 		request.open("GET", url, true);
@@ -64,11 +75,12 @@ function LoopPlayer(url, loaded_callback) {
 		request.onload = function() {
 			ctx.decodeAudioData(request.response,
 				function(data) {
-					callback(data, undefined);
+					// console.log(data.length);
+					that.data = data;
+					loadedCallback();
 				  },
 				function() {
-					alert('error');
-					callback(undefined, "Error decoding the file " + url);
+					console.log('error');
 				  }
 			  );
 		  };
@@ -77,6 +89,8 @@ function LoopPlayer(url, loaded_callback) {
 		this.parseLoopPoints();
 	}
 
+	// Parses the loop points from URL.
+	// The problem is that you don't know 
 	this.parseLoopPoints = function() {
 		var uri = new URI(this.url);
 
@@ -84,17 +98,16 @@ function LoopPlayer(url, loaded_callback) {
 
 		var timeArray = filename.split(LOOP_SEPARATOR);
 
-		this.loopStart = arrayGet(timeArray, -2 - LOOP_END_SKIP);
-		this.loopEnd = arrayGet(timeArray, -1 - LOOP_END_SKIP);
+		var sampleRateOrig = arrayGetLoop(timeArray, -3);
+		console.log(sampleRateOrig);
+		this.loopStart = arrayGetLoop(timeArray, -2) / sampleRateOrig;
+		this.loopEnd = arrayGetLoop(timeArray, -1) / sampleRateOrig;
+
+		console.log("{0} {1}".format(this.loopStart, this.loopEnd));
 	}
 
-
-
-	this.getFile(callback = function(data) {
-		that.data = data;
-		loaded_callback();
-	  });
-
+	// Assign the decoded data to $data.
+	this.loadFile();
 
 	// AFTER LOADED
 
@@ -104,15 +117,23 @@ function LoopPlayer(url, loaded_callback) {
 
 		var source = this.source = ctx.createBufferSource();
 		source.buffer = this.data;
+
+		var loopStart = source.loopStart = this.loopStart;
+		var loopEnd   = source.loopEnd   = this.loopEnd;
 		source.loop = true;
+		
 		source.connect(ctx.destination);
 
 		source.playTime = function() {
-			return (that.pause_offset + (ctx.currentTime - that.initTime)) % source.buffer.duration;
+			var realTime = that.pauseOffset + (ctx.currentTime - that.initTime);
+			var loopTime = realTime - loopStart;
+			var loopLength = loopEnd - loopStart;
+
+			return (loopTime > 0) ? (loopStart + loopTime % loopLength) : realTime;
 		  }
 
 
-		source.start(0, offset = this.pause_offset);
+		source.start(0, offset = this.pauseOffset);
 		this.initTime = ctx.currentTime;
 
 		this.playing = true;
@@ -120,7 +141,7 @@ function LoopPlayer(url, loaded_callback) {
 
 	this.pause = function() {
 		if (!this.loaded()) return;
-		this.pause_offset = this.source.playTime();
+		this.pauseOffset = this.source.playTime();
 		this.source.stop(0);
 		this.source = null;
 

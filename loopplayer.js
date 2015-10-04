@@ -5,6 +5,21 @@ var LOOP_SEPARATOR = '.';
 var LOOP_END_SKIP = (LOOP_SEPARATOR === '.' ? 1 : 0);
 
 
+// First, checks if it isn't implemented yet.
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+
+
+
 function onloadf(callback) {
 	document.addEventListener("DOMContentLoaded", callback);
 }
@@ -18,7 +33,7 @@ function arrayGet(array, idx) {
 }
 
 
-function LoopPlayer(id, url, loaded_callback) {
+function LoopPlayer(url, loaded_callback) {
 	var ctx = this.ctx = new AudioContext();
 	var that = this;
 
@@ -33,21 +48,11 @@ function LoopPlayer(id, url, loaded_callback) {
 
 	// fuck Javascript
 
-	function loaded() {
+	this.loaded = function() {
 		return that.data != null;
 	}
 
-
-	onloadf(
-	  function() {
-		document.getElementById(id).addEventListener("click",
-		  function(e) {
-			toggle(e.target);
-		  });
-	  });
-
-
-	function getFile(callback) {
+	this.getFile = function(callback) {
 		var request = new XMLHttpRequest();
 		var url = that.url;
 		request.open("GET", url, true);
@@ -69,23 +74,23 @@ function LoopPlayer(id, url, loaded_callback) {
 		that.parseLoopPoints();
 	}
 
-	function parseLoopPoints() {
+	this.parseLoopPoints = function() {
 		var uri = new URI(that.url);
 
-		// var filename = uri.split('/')[that_object.length - 1];
-		var fileName = arrayGet(uri.split('/'), -1);
+		var filename = arrayGet(uri.path().split('/'), -1);
 
 		var timeArray = filename.split(LOOP_SEPARATOR);
 
 		var loopStart = arrayGet(timeArray, -2 - LOOP_END_SKIP);
 		var loopEnd = arrayGet(timeArray, -1 - LOOP_END_SKIP);
 
-		alert(loopStart, loopEnd);
+		alert("Loop points: {0}, {1}"
+			.format(String(loopStart), String(loopEnd)));
 	}
 
 
 
-	getFile(callback = function(data) {
+	this.getFile(callback = function(data) {
 		that.data = data;
 		loaded_callback();
 	  });
@@ -94,8 +99,8 @@ function LoopPlayer(id, url, loaded_callback) {
 	// AFTER LOADED
 
 
-	function play() {
-		if (!loaded()) return;
+	this.play = function() {
+		if (!that.loaded()) return;
 
 		var source = that.source = ctx.createBufferSource();
 		source.buffer = that.data;
@@ -113,8 +118,8 @@ function LoopPlayer(id, url, loaded_callback) {
 		that.playing = true;
 	}
 
-	function pause() {
-		if (!loaded()) return;
+	this.pause = function() {
+		if (!that.loaded()) return;
 		that.pause_offset = that.source.playTime();
 		that.source.stop(0);
 		that.source = null;
@@ -122,11 +127,11 @@ function LoopPlayer(id, url, loaded_callback) {
 		that.playing = false;
 	}
 
-	function toggle(t) {
+	this.toggle = function(t) {
 		if (that.playing) {
-			pause();
+			that.pause();
 		} else {
-			play();
+			that.play();
 		}
 
 		t.innerHTML = that.playing ? "Pause" : "Play";

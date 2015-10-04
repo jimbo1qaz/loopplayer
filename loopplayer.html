@@ -7,10 +7,19 @@
 		<script src="loopplayer.js"></script>
 		
 		<script>
-			var loopplayer = new LoopPlayer('play-pause', 'pulse.0.48000.wav',
-			  loaded_callback=function() {
+			var loopplayer = new LoopPlayer('sounds/pulse.0.48000.wav',
+			  loaded_callback = function() {
 			  	document.getElementById("loading").innerHTML = "Loaded."
-			  } );
+	  		  });
+
+  			onloadf(
+  			  function() {
+  			  	document.getElementById('play-pause').addEventListener("click",
+				  function(e) {
+					loopplayer.toggle(e.target);
+				  });
+  			  });
+
 		</script>
 		<style type="text/css">
 			table {

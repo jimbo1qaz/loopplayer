@@ -7,14 +7,84 @@
 		<script src="loopplayer.js"></script>
 		
 		<script>
-			var loopplayer = new LoopPlayer('sounds/sd3innocent.48000.48000.4654560.wav',
-			  loaded_callback = function() {
-			  	document.getElementById("loading").innerHTML = "Loaded."
-  			  	document.getElementById('play-pause').addEventListener("click",
-				  function(e) {
-					loopplayer.toggle(e.target);
+			onloadf(function() {
+
+				var FILE_NAME_KEY = 'file';
+
+				var fileName = new URI().search(true)['file'];
+
+				if (fileName === undefined) {
+					document.getElementById("loading").innerHTML = 'Missing audio file name ?' + FILE_NAME_KEY + '=';
+					return;
+				}
+
+				var loopplayer = new LoopPlayer(fileName,
+					document.getElementById('playPause'),
+					document.getElementById('seek'),
+				  function() {
+					document.getElementById("loading").innerHTML = "Loaded.";
+
+					var elements = Array.from(document.getElementsByClassName("loopplayer"));
+					elements.forEach(function(el) {
+						el.disabled = false;
+					});
+
+					// **** Initialize seek.
+					var seek = document.getElementById('seek');
+					
+					seek.max = loopplayer.loopEnd;
+
+					// Disable seek updating on drag.
+					seek.addEventListener('input',
+					  function(ev) {
+						loopplayer.disableSeek();
+						// if ([33, 34].indexOf(key) !== -1) { }
+					  });
+
+					// Reenable seek updating on drag end.
+					seek.addEventListener("change",
+					  function(ev) {
+						loopplayer.seekMaybe(Number(ev.target.value));
+					  });
+
+					// Disable arrow keys on seek bar.
+					seek.addEventListener("keydown",
+					  function(ev) {
+					  	var key = ev.keyCode;
+						if ([37, 38, 39, 40].indexOf(key) !== -1) {
+							ev.preventDefault();
+						}
+					  });
+
+					// Immediately apply page-[up/down] movement, rather than waiting for focus to leave the slider.
+					// If I make page up down apply immediately (keydown), they will reapply on Firefox when focus leaves (change).
+					// So I ensure that onChange only seeks if disabled.
+					seek.addEventListener("keyup",
+					  function(ev) {
+					  	var key = ev.keyCode;
+						if ([33, 34].indexOf(key) !== -1) {
+							loopplayer.seekMaybe(Number(ev.target.value));
+						}
+					  });
+
+
+					// **** Initialize play pause.
+					document.getElementById('playPause').addEventListener("click",
+					  function(ev) {
+						loopplayer.toggle();
+					  });
+
+
+
+					// **** Initialize stop button.
+					document.getElementById('stop').addEventListener("click",
+					  function(ev) {
+						loopplayer.stop();
+					  });
+
+					loopplayer.updateGuiLoop();
 				  });
-	  		  });
+			  });
 
 		</script>
 		<style type="text/css">
@@ -26,9 +96,17 @@
 
 	<body>
 
-		<table><tr>
-			<td><button id="play-pause">Play</button></td>
-		</tr></table>
+		<table>
+		<tr>
+			<td colspan="1000"><input type="range" min="0" max="1" value="0" step="0.001"  tabindex="-1"
+					id="seek" class="loopplayer" disabled="true"/></td>
+		<tr>
+			<td><input type="button" value="Play"
+					id="playPause" class="loopplayer" disabled="true" /></td>
+			<td><input type="button" value="Stop"
+					id="stop" class="loopplayer" disabled="true" readonly /></td>
+		</tr>
+		</table>
 
 		<p id="loading">Loading...</p>
 

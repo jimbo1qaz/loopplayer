@@ -4,230 +4,230 @@ var UPDATE_GUI_INTERVAL = 50;
 
 // Dummy console.
 var console = window.console || {
-	"log": function(stuff) {}
-};
+    "log": function(stuff) {
+    }
+  };
 
 // Implement (string).format .
 if (!String.prototype.format) {
-	String.prototype.format = function() {
-		var args = arguments;
-		return this.replace(/{(\d+)}/g, function(match, number) { 
-			return typeof args[number] != 'undefined' ?
-				args[number] :
-				match;
-		  });
-	  };
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) {
+      return typeof args[number] != 'undefined' ?
+        args[number] :
+        match;
+    });
+  };
 }
-
 
 
 function onloadf(callback) {
-	document.addEventListener("DOMContentLoaded", callback);
+  document.addEventListener("DOMContentLoaded", callback);
 }
 
 function arrayGet(array, idx) {
-	if (idx < 0) {
-		return array[array.length + idx];
-	} else {
-		return array[idx];
-	}
+  if (idx < 0) {
+    return array[array.length + idx];
+  } else {
+    return array[idx];
+  }
 }
 
 function arrayGetLoop(array, idx) {
-	return Number(array[array.length + idx - LOOP_END_SKIP]);
+  return Number(array[array.length + idx - LOOP_END_SKIP]);
 }
 
 function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) {
-	var that = this;
+  var that = this;
 
-	var ctx = that.ctx = new AudioContext();
+  var ctx = that.ctx = new AudioContext();
 
-	that.url = url;
-	that.data = null;
-	that.playing = false;
+  that.url = url;
+  that.data = null;
+  that.playing = false;
 
-	that.loaded = function() {
-		return that.data !== null;
-	};
+  that.loaded = function() {
+    return that.data !== null;
+  };
 
-	that.source = null;
+  that.source = null;
 
-	that.sampleRate = null;
-	that.loopStart = null;
-	that.loopEnd = null;
+  that.sampleRate = null;
+  that.loopStart = null;
+  that.loopEnd = null;
 
-	// startTime = arbitrary seconds.
-	// playOffset = delta seconds (ctx.currentTime - startTime).
+  // startTime = arbitrary seconds.
+  // playOffset = delta seconds (ctx.currentTime - startTime).
 
-	that.startTime = null;
-	that.playOffset = 0;
+  that.startTime = null;
+  that.playOffset = 0;
 
-	that.domPlayPause  = domPlayPause;
-	that.domSeek       = domSeek;
-	that.canSeekGui = true;
+  that.domPlayPause = domPlayPause;
+  that.domSeek = domSeek;
+  that.canSeekGui = true;
 
-	// Load the audio data from URL.
-	// It will be resampled to ctx.sampleRate.
-	// Set data -> that.data.
+  // Load the audio data from URL.
+  // It will be resampled to ctx.sampleRate.
+  // Set data -> that.data.
 
-	that.loadFile = function() {
-		var request = new XMLHttpRequest();
-		var url = that.url;
-		request.open("GET", url, true);
-		request.responseType = "arraybuffer";
+  that.loadFile = function() {
+    var request = new XMLHttpRequest();
+    var url = that.url;
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
 
-		request.onload = function() {
-			ctx.decodeAudioData(request.response,
-				function(data) {
-					// console.log(data.length);
-					that.data = data;
-					loadedCallback();
-				  },
-				function() {
-					console.log('error');
-				  }
-			  );
-		  };
-		request.send();
+    request.onload = function() {
+      ctx.decodeAudioData(request.response,
+        function(data) {
+          // console.log(data.length);
+          that.data = data;
+          loadedCallback();
+        },
+        function() {
+          console.log('error');
+        }
+      );
+    };
+    request.send();
 
-		that.parseLoopPoints();
-	};
+    that.parseLoopPoints();
+  };
 
-	// Parses the loop points from URL.
-	// The problem is that you don't know the sampling rate, because WebAudio was designed by a bunch of idiotic fucktards.
-	// So I place the fucking sampling rate in the fucking file name.
-	that.parseLoopPoints = function() {
-		var uri = new URI(that.url);
+  // Parses the loop points from URL.
+  // The problem is that you don't know the sampling rate, because WebAudio was designed by a bunch of idiotic fucktards.
+  // So I place the fucking sampling rate in the fucking file name.
+  that.parseLoopPoints = function() {
+    var uri = new URI(that.url);
 
-		var filename = arrayGet(uri.path().split('/'), -1);
+    var filename = arrayGet(uri.path().split('/'), -1);
 
-		var timeArray = filename.split(LOOP_SEPARATOR);
+    var timeArray = filename.split(LOOP_SEPARATOR);
 
-		var sampleRateOrig = arrayGetLoop(timeArray, -3);
-		console.log(sampleRateOrig);
-		that.loopStart = arrayGetLoop(timeArray, -2) / sampleRateOrig;
-		that.loopEnd = arrayGetLoop(timeArray, -1) / sampleRateOrig;
+    var sampleRateOrig = arrayGetLoop(timeArray, -3);
+    console.log(sampleRateOrig);
+    that.loopStart = arrayGetLoop(timeArray, -2) / sampleRateOrig;
+    that.loopEnd = arrayGetLoop(timeArray, -1) / sampleRateOrig;
 
-		console.log("{0} {1}".format(that.loopStart, that.loopEnd));
-	};
+    console.log("{0} {1}".format(that.loopStart, that.loopEnd));
+  };
 
-	// Assign the decoded data to $data.
-	// that.loadFile();
+  // Assign the decoded data to $data.
+  // that.loadFile();
 
 
-	// Start playing from playOffset, and initialize startTime. ()
-	that.play = function() {
-		if (!that.loaded()) return;
+  // Start playing from playOffset, and initialize startTime. ()
+  that.play = function() {
+    if (!that.loaded()) return;
 
-		var source = that.source = ctx.createBufferSource();
-		source.buffer = that.data;
-		
-		source.connect(ctx.destination);
+    var source = that.source = ctx.createBufferSource();
+    source.buffer = that.data;
 
-		source.start(0, that.playOffset);
-		that.startTime = ctx.currentTime;
+    source.connect(ctx.destination);
 
-		that.playing = true;
+    source.start(0, that.playOffset);
+    that.startTime = ctx.currentTime;
 
-		// Set up looping.
+    that.playing = true;
 
-		var loopStart = source.loopStart = that.loopStart;
-		var loopEnd   = source.loopEnd   = that.loopEnd;
-		source.loop = true;
+    // Set up looping.
 
-		source.playTime = function() {
-			var realTime = that.playOffset + (ctx.currentTime - that.startTime);
-			var loopTime = realTime - loopStart;
-			var loopLength = loopEnd - loopStart;
+    var loopStart = source.loopStart = that.loopStart;
+    var loopEnd = source.loopEnd = that.loopEnd;
+    source.loop = true;
 
-			return (loopTime > 0) ? (loopStart + loopTime % loopLength) : realTime;
-		  };
+    source.playTime = function() {
+      var realTime = that.playOffset + (ctx.currentTime - that.startTime);
+      var loopTime = realTime - loopStart;
+      var loopLength = loopEnd - loopStart;
 
-		that.updateGui();
-	};
+      return (loopTime > 0) ? (loopStart + loopTime % loopLength) : realTime;
+    };
 
-	that.getPlayTime = function() {
-		if (that.source !== null) {
-			return that.source.playTime();
-		} else {
-			return that.playOffset;
-		}
-	};
+    that.updateGui();
+  };
 
-	// **** GUI FUNCTIONS ****
+  that.getPlayTime = function() {
+    if (that.source !== null) {
+      return that.source.playTime();
+    } else {
+      return that.playOffset;
+    }
+  };
 
-	that.pause = function() {
-		if (!that.loaded()) return;
-		that.playOffset = that.source.playTime();
-		that.source.stop(0);
-		that.source = null;
+  // **** GUI FUNCTIONS ****
 
-		that.playing = false;
+  that.pause = function() {
+    if (!that.loaded()) return;
+    that.playOffset = that.source.playTime();
+    that.source.stop(0);
+    that.source = null;
 
-		that.updateGui();
-	};
+    that.playing = false;
 
-	that.toggle = function() {
-		if (that.playing) {
-			that.pause();
-		} else {
-			that.play();
-		}
+    that.updateGui();
+  };
 
-		that.updateGui();
-	};
+  that.toggle = function() {
+    if (that.playing) {
+      that.pause();
+    } else {
+      that.play();
+    }
 
-	that.seek = function(time) {
-		if (that.enableSeek()) {
-			alert('Seeking when GUI update is disabled!');
-		}
+    that.updateGui();
+  };
 
-		var playing = that.playing;
-		
-		if (playing) that.pause();
-		that.playOffset = time;
-		if (playing) that.play();
-	};
+  that.seek = function(time) {
+    if (that.enableSeek()) {
+      alert('Seeking when GUI update is disabled!');
+    }
 
-	that.seekMaybe = function(time) {
-		if (that.enableSeek()) {
-			that.seek(time);
-		}
-	};
+    var playing = that.playing;
 
-	that.stop = function() {
-		if (that.playing) that.pause();
-		that.playOffset = 0;
-		that.updateGui();
-	};
+    if (playing) that.pause();
+    that.playOffset = time;
+    if (playing) that.play();
+  };
 
-	that.disableSeek = function() {
-		return that.canSeekGui !== (that.canSeekGui = false);
-	};
+  that.seekMaybe = function(time) {
+    if (that.enableSeek()) {
+      that.seek(time);
+    }
+  };
 
-	that.enableSeek = function() {
-		return that.canSeekGui !== (that.canSeekGui = true);
-	};
+  that.stop = function() {
+    if (that.playing) that.pause();
+    that.playOffset = 0;
+    that.updateGui();
+  };
 
-	// **** GUI STATUS FUNCTIONS ****
+  that.disableSeek = function() {
+    return that.canSeekGui !== (that.canSeekGui = false);
+  };
 
-	that.updateGui = function() {
-		that.domPlayPause.value = that.playing ? "Pause" : "Play";
-		that.updateSeek();
-	};
+  that.enableSeek = function() {
+    return that.canSeekGui !== (that.canSeekGui = true);
+  };
 
-	that.updateSeek = function() {
-		if (that.canSeekGui) {
-			that.domSeek.value = that.getPlayTime();
-		}
-	};
+  // **** GUI STATUS FUNCTIONS ****
 
-	that.updateGuiLoop = function() {
-		that.updateSeek();
-		window.setTimeout(that.updateGuiLoop, UPDATE_GUI_INTERVAL);
-	};
+  that.updateGui = function() {
+    that.domPlayPause.value = that.playing ? "Pause" : "Play";
+    that.updateSeek();
+  };
 
-	// **** END CONSTRUCTOR
+  that.updateSeek = function() {
+    if (that.canSeekGui) {
+      that.domSeek.value = that.getPlayTime();
+    }
+  };
 
-	that.loadFile();
+  that.updateGuiLoop = function() {
+    that.updateSeek();
+    window.setTimeout(that.updateGuiLoop, UPDATE_GUI_INTERVAL);
+  };
+
+  // **** END CONSTRUCTOR
+
+  that.loadFile();
 }

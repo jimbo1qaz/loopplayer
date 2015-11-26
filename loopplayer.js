@@ -37,7 +37,7 @@ function arrayGetLoop(array, idx) {
 	return Number(array[array.length + idx - LOOP_END_SKIP]);
 }
 
-function LoopPlayer(url, domPlayPause, domSeek, loadedCallback) {
+function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) {
 	var that = this;
 
 	var ctx = that.ctx = new AudioContext();

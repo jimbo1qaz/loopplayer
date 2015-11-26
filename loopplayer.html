@@ -5,9 +5,11 @@
 		<title>loopplayer WebAudio</title>
 		<script src="include/URI.js"></script>
 		<script src="loopplayer.js"></script>
-		
+
 		<script>
 			onloadf(function() {
+
+				// Load configurtion options from URL.
 
 				var FILE_NAME_KEY = 'file';
 
@@ -18,9 +20,13 @@
 					return;
 				}
 
+
+				// Construct the LoopPlayer object.
+
 				var loopplayer = new LoopPlayer(fileName,
 					document.getElementById('playPause'),
 					document.getElementById('seek'),
+					document.getElementById('description'),
 				  function() {
 					document.getElementById("loading").innerHTML = "Loaded.";
 
@@ -31,7 +37,7 @@
 
 					// **** Initialize seek.
 					var seek = document.getElementById('seek');
-					
+
 					seek.max = loopplayer.loopEnd;
 
 					// Disable seek updating on drag.
@@ -109,6 +115,7 @@
 		</table>
 
 		<p id="loading">Loading...</p>
+		<p id="description"></p>
 
 	</body>
 </html>

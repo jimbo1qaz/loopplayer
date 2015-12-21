@@ -1,14 +1,6 @@
-"use strict";
-
-const LOOP_SEPARATOR = '.';
-
-const UPDATE_GUI_INTERVAL = 50;
-
-// Which files are detected as metadata?
-const METADATA_EXTS = [
-   'loop',
-   'yaml'
-];
+var LOOP_SEPARATOR = '.';
+var LOOP_END_SKIP = (LOOP_SEPARATOR === '.' ? 1 : 0);
+var UPDATE_GUI_INTERVAL = 50;
 
 // Dummy console.
 var console = window.console || {
@@ -16,9 +8,7 @@ var console = window.console || {
       }
    };
 
-
 // Implement (string).format .
-// http://stackoverflow.com/a/4673436
 if (!String.prototype.format) {
    String.prototype.format = function() {
       var args = arguments;
@@ -31,37 +21,22 @@ if (!String.prototype.format) {
 }
 
 
-
-function arrayGetInt(array, idx) {
-   if (idx < 0) {
-      return parseFloat(array[array.length + idx]);
-   } else {
-      return parseFloat(array[idx]);
-   }
-}
-
-
 function onloadf(callback) {
    document.addEventListener("DOMContentLoaded", callback);
 }
 
-function inArray(arr, obj) {
-   return arr.indexOf(obj) !== -1;
-}
-
-function relativeUrl(a, b) {
-   var aa = URI(a);
-   var bb = URI(b);
-
-   if (bb.is('absolute')) {
-      return b;
+function arrayGet(array, idx) {
+   if (idx < 0) {
+      return array[array.length + idx];
+   } else {
+      return array[idx];
    }
-
-   return aa.directory() + '/' + b;
 }
 
+function arrayGetLoop(array, idx) {
+   return Number(array[array.length + idx - LOOP_END_SKIP]);
+}
 
-// define class
 function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) {
    var that = this;
 
@@ -77,6 +52,7 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
    that.source = null;
 
+   that.sampleRate = null;
    that.loopStart = null;
    that.loopEnd = null;
 
@@ -88,82 +64,55 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
    that.domPlayPause = domPlayPause;
    that.domSeek = domSeek;
-   that.domDescription = domDescription;
    that.canSeekGui = true;
 
-   const MAX_DEPTH = 1;
+   // Load the audio data from URL.
+   // It will be resampled to ctx.sampleRate.
+   // Set data -> that.data.
 
-
-   // Load a file into loopplayer.
-   that.loadFile = function(depth) {
-      // If $url is specified, assume audio to avoid infinite loop.
-
-      // Detect audio or alias by file extension.
-      // .loop or .yaml at the moment
-      // TODO: translate this whole thing into yield-futures?
-
-      if (depth === undefined) depth = 0;
-
+   that.loadFile = function() {
       var request = new XMLHttpRequest();
-
       var url = that.url;
       request.open("GET", url, true);
+      request.responseType = "arraybuffer";
 
-      var ext = URI(url).suffix();
-
-
-      if (depth < MAX_DEPTH && inArray(METADATA_EXTS, ext)) {
-         // Process metadata files.
-
-         request.onload = function() {
-            var response = jsyaml.safeLoad(request.response);
-            if (response && response.url) {
-               that.url = relativeUrl(that.url, response.url);
-               that.loadFile(depth + 1);
-            } else {
-               console.log('error: invalid metadata, missing url');
+      request.onload = function() {
+         ctx.decodeAudioData(request.response,
+            function(data) {
+               // console.log(data.length);
+               that.data = data;
+               loadedCallback();
+            },
+            function() {
+               console.log('error');
             }
-         };
-
-
-      } else {
-         // Process audio files.
-
-         request.responseType = "arraybuffer";
-         request.onload = function() {
-            ctx.decodeAudioData(request.response,
-               function(data) {
-                  that.data = data;
-                  loadedCallback();
-               },
-               function() {
-                  console.log('error decoding audio data');
-               }
-            );
-         };
-
-         that.parseLoopPoints();
-      }
-
+         );
+      };
       request.send();
+
+      that.parseLoopPoints();
    };
 
-   // Parses the sampling rate and loop points from URL.
+   // Parses the loop points from URL.
+   // The problem is that you don't know the sampling rate, because WebAudio was designed by a bunch of idiotic fucktards.
+   // So I place the fucking sampling rate in the fucking file name.
    that.parseLoopPoints = function() {
       var uri = new URI(that.url);
 
-      var filename = uri.filename();
-      var filebase = filename.split('.').slice(0, -1).join('.');
+      var filename = arrayGet(uri.path().split('/'), -1);
 
-      var timeArray = filebase.split(LOOP_SEPARATOR);
+      var timeArray = filename.split(LOOP_SEPARATOR);
 
-      var sampleRateOrig = arrayGetInt(timeArray, -3);
+      var sampleRateOrig = arrayGetLoop(timeArray, -3);
       console.log(sampleRateOrig);
-      that.loopStart = arrayGetInt(timeArray, -2) / sampleRateOrig;
-      that.loopEnd = arrayGetInt(timeArray, -1) / sampleRateOrig;
+      that.loopStart = arrayGetLoop(timeArray, -2) / sampleRateOrig;
+      that.loopEnd = arrayGetLoop(timeArray, -1) / sampleRateOrig;
 
       console.log("{0} {1}".format(that.loopStart, that.loopEnd));
    };
+
+   // Assign the decoded data to $data.
+   // that.loadFile();
 
 
    // Start playing from playOffset, and initialize startTime. ()
@@ -196,7 +145,6 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
       that.updateGui();
    };
-
 
    that.getPlayTime = function() {
       if (that.source !== null) {

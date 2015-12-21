@@ -60,10 +60,22 @@ def get_rate(wavname):
     return int(SOXI['-r', wavname]())
 
 
+def get_base_ext(filename):
+    rev = filename[::-1]
+    base = skip_spaces(rev, 1, '.')[::-1]
+    ext = keep_leading(rev, 1, '.')[::-1]
+    return base, ext
+
 def trim_as(wavname, outname, samples):
-    x = SOX[wavname, outname, 'trim', '0s', str(samples)+'s']
-    # print(x)
-    x()
+    # BUG: Firefox currently doesn't support 24-bit WAV.
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=864780
+    args = ['trim', '0s', str(samples)+'s']
+
+    SOX[wavname, '-b', '16', outname][args] & FG
+
+    # Convert to MP3.
+    mp3name = get_base_ext(outname)[0] + '.mp3'
+    SOX[wavname, '-C', '-0.01', mp3name][args] & FG
 
 
 LOOP_SECONDS = 2
@@ -104,9 +116,7 @@ class Looper:
         trim_as(self.x2name, outname, length)
 
     def generate_outname(self, loopdata):
-        rev = self.outname[::-1]
-        base = skip_spaces(rev, 1, '.')[::-1]
-        ext = keep_leading(rev, 1, '.')[::-1]
+        base, ext = get_base_ext(self.outname)
 
         return '.'.join([base] + [str(s) for s in loopdata] + [ext])
 

@@ -53,7 +53,7 @@ function relativeUrl(a, b) {
    var aa = URI(a);
    var bb = URI(b);
 
-   if (bb.is('absolute')) {
+   if (bb.is('absolute') || bb.toString()[0] == '/') {
       return b;
    }
 
@@ -68,6 +68,7 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
    var ctx = that.ctx = new AudioContext();
 
    that.url = url;
+   that.urls = [url];
    that.data = null;
    that.playing = false;
 
@@ -91,35 +92,47 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
    that.domDescription = domDescription;
    that.canSeekGui = true;
 
-   const MAX_DEPTH = 1;
+   const MAX_DEPTH = 2;
 
 
    // Load a file into loopplayer.
-   that.loadFile = function(depth) {
+   that.loadFile = function() {
       // If $url is specified, assume audio to avoid infinite loop.
 
       // Detect audio or alias by file extension.
       // .loop or .yaml at the moment
       // TODO: translate this whole thing into yield-futures?
 
-      if (depth === undefined) depth = 0;
-
       var request = new XMLHttpRequest();
 
-      var url = that.url;
-      request.open("GET", url, true);
+      var urls = that.urls;
+      request.open("GET", that.url, true);
 
-      var ext = URI(url).suffix();
+      var ext = URI(that.url).suffix().toLowerCase();
 
+      if (inArray(METADATA_EXTS, ext)) {
 
-      if (depth < MAX_DEPTH && inArray(METADATA_EXTS, ext)) {
+         // Detect recursive metadata loops.
+
+         if (urls.length >= MAX_DEPTH) {
+            console.log('error: recursive metadata.');
+            console.log('URL traceback (most recent URL last):');
+            for (var i = urls.length - 1; i >= 0; i--) {
+               console.log('    ' + urls[i]);
+            }
+            return;
+         }
+
          // Process metadata files.
 
          request.onload = function() {
             var response = jsyaml.safeLoad(request.response);
             if (response && response.url) {
+
                that.url = relativeUrl(that.url, response.url);
-               that.loadFile(depth + 1);
+               that.urls.push(that.url);
+               that.loadFile();
+
             } else {
                console.log('error: invalid metadata, missing url');
             }

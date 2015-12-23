@@ -19,6 +19,12 @@ To use loopplayer, download, clone, or upload all files in this repository. Then
 
 * Locally hosted files can only be accessed using relative URLs from a local installation of loopplayer. The sounds must be stored with loopplayer or in a subdirectory.
 
+## Redirects/Metadata
+
+loopplayer supports redirect/metadata files. See `sample.yaml` as an example. Redirect files must have an extension of `.yaml` or `.loop` (subject to change).
+
+Right now, only `url` is implemented. All other attributes are unimplemented and subject to change. Relative, root, and absolute URLs are supported.
+
 ## Compatibility
 
 loopplayer supports Chrome and Firefox (stutters on Windows). It should work with Opera, due to using Webkit. Edge is untested. It will not work on IE11, due to not supporting Web Audio API.

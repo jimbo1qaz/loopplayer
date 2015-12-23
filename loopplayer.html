@@ -9,7 +9,7 @@
 
    <script>
       "use strict";
-      onloadf(function () {
+      onloadf(function() {
 
          // Load configurtion options from URL.
 
@@ -29,11 +29,11 @@
             document.getElementById('playPause'),
             document.getElementById('seek'),
             document.getElementById('description'),
-            function () {
+            function() {
                document.getElementById("loading").innerHTML = "Loaded.";
 
                var elements = document.getElementsByClassName("loopplayer");
-               [].forEach.call(elements, function (el) {
+               [].forEach.call(elements, function(el) {
                   el.disabled = false;
                });
 
@@ -48,20 +48,20 @@
 
                // Disable seek updating on drag.
                seek.addEventListener('input',
-                  function (ev) {
+                  function(ev) {
                      loopplayer.disableSeek();
                      // if ([33, 34].indexOf(key) !== -1) { }
                   });
 
                // Reenable seek updating on drag end.
                seek.addEventListener("change",
-                  function (ev) {
+                  function(ev) {
                      loopplayer.seekMaybe(Number(ev.target.value));
                   });
 
                // Disable arrow keys on seek bar.
                seek.addEventListener("keydown",
-                  function (ev) {
+                  function(ev) {
                      var key = ev.keyCode;
                      if ([37, 38, 39, 40].indexOf(key) !== -1) {
                         ev.preventDefault();
@@ -72,7 +72,7 @@
                // If I make page up down apply immediately (keydown), they will reapply on Firefox when focus leaves (change).
                // So I ensure that onChange only seeks if disabled.
                seek.addEventListener("keyup",
-                  function (ev) {
+                  function(ev) {
                      var key = ev.keyCode;
                      if ([33, 34].indexOf(key) !== -1) {
                         loopplayer.seekMaybe(Number(ev.target.value));
@@ -82,14 +82,14 @@
 
                // **** Initialize play pause.
                document.getElementById('playPause').addEventListener("click",
-                  function (ev) {
+                  function(ev) {
                      loopplayer.toggle();
                   });
 
 
                // **** Initialize stop button.
                document.getElementById('stop').addEventListener("click",
-                  function (ev) {
+                  function(ev) {
                      loopplayer.stop();
                   });
 

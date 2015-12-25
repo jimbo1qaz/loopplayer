@@ -134,8 +134,12 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
                that.loadFile();
 
             } else {
-               console.log('error: invalid metadata, missing url');
+               console.log('error: invalid metadata, missing "url"');
             }
+         };
+
+         request.onerror = function(request) {
+            console.log('error fetching metadata')
          };
 
 
@@ -153,6 +157,10 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
                   console.log('error decoding audio data');
                }
             );
+         };
+
+         request.onerror = function(request) {
+            console.log('error fetching audio')
          };
 
          that.parseLoopPoints();

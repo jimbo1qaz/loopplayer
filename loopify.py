@@ -6,6 +6,10 @@ loopify 1x.wav 2x.wav out.wav
 
 looped section: [start, stop)
 stop = # of samples
+
+Changed: Output length no longer exceeds 1x length. (previously by 2 seconds)
+To properly capture decay or reverb, extend both 1x and 2x by the same amount.
+For help, see function get_loop_data.
 """
 
 import os
@@ -78,8 +82,8 @@ def trim_as(wavname, outname, samples):
     SOX[wavname, '-C', '-0.01', mp3name][args] & FG
 
 
-LOOP_SECONDS = 2
-LOOP_SAMPLES = 100000
+LOOP_SECONDS = 0
+LOOP_SAMPLES = 0
 
 
 class Looper:
@@ -97,7 +101,7 @@ class Looper:
     def get_loop_data(self):
         # --|loop|loop
         #        a    b
-        #    ls   le
+        #   ls   le
         self.sample_rate = sample_rate = get_rate(self.x1name)
 
         a = get_len(self.x1name)

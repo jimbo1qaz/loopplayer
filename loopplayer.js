@@ -135,6 +135,11 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
                that.urls.push(that.url);
                that.loadFile();
 
+               // Push title into document.title .
+               if (response && response.title) {
+                  document.title = response.title + ' - ' + document.title;
+               }
+
             } else {
                console.log('error: invalid metadata, missing "url"');
             }

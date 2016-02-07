@@ -194,6 +194,15 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
    };
 
 
+   that.getLoopTime = function() {
+      var realTime = that.playOffset;
+      var loopTime = realTime - loopStart;
+      var loopLength = loopEnd - loopStart;
+
+      return (loopTime > 0) ? (loopStart + loopTime % loopLength) : realTime;
+   };
+
+
    // Start playing from playOffset, and initialize startTime. ()
    that.play = function() {
       if (!that.loaded()) return;
@@ -203,23 +212,21 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
       source.connect(ctx.destination);
 
-      source.start(0, that.playOffset);
+      var loopTime = that.getRealTime()
+
+      source.start(0, that.loopTime);
       that.startTime = ctx.currentTime;
 
       that.playing = true;
 
       // Set up looping.
 
-      var loopStart = source.loopStart = that.loopStart;
-      var loopEnd = source.loopEnd = that.loopEnd;
+      source.loopStart = that.loopStart;
+      source.loopEnd = that.loopEnd;
       source.loop = true;
 
-      source.playTime = function() {
-         var realTime = that.playOffset + (ctx.currentTime - that.startTime);
-         var loopTime = realTime - loopStart;
-         var loopLength = loopEnd - loopStart;
-
-         return (loopTime > 0) ? (loopStart + loopTime % loopLength) : realTime;
+      source.realTime = function() {
+         return that.playOffset + (ctx.currentTime - that.startTime);
       };
 
       that.updateGui();
@@ -238,7 +245,7 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
    that.pause = function() {
       if (!that.loaded()) return;
-      that.playOffset = that.source.playTime();
+      that.playOffset = that.source.realTime();
       that.source.stop(0);
       that.source = null;
 

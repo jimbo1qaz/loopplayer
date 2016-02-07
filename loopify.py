@@ -26,7 +26,7 @@ from plumbum import BG, FG, local as pb, cli
 
 assert BG, FG
 
-SOXI = pb['soxi']
+SOXI = pb['sox']['--i']
 SOX = pb['sox']
 
 

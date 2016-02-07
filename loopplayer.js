@@ -125,7 +125,7 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
             return;
          }
 
-         // Process metadata files.
+         // **** PARSE METADATA FILES
 
          request.onload = function() {
             var response = jsyaml.safeLoad(request.response);
@@ -151,7 +151,7 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
 
       } else {
-         // Process audio files.
+         // **** PROCESS AUDIO FILES
 
          request.responseType = "arraybuffer";
          request.onload = function() {

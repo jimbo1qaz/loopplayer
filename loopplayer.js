@@ -112,6 +112,8 @@ function LoopPlayer(url, domPlayPause, domSeek, domDescription, loadedCallback) 
 
       if (inArray(METADATA_EXTS, ext)) {
 
+         request.responseType = 'text';
+
          // Detect recursive metadata loops.
 
          if (urls.length >= MAX_DEPTH) {

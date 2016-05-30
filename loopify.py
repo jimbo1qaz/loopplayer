@@ -70,17 +70,6 @@ def get_base_ext(filename):
     ext = keep_leading(rev, 1, '.')[::-1]
     return base, ext
 
-def trim_as(wavname, outname, samples):
-    # BUG: Firefox currently doesn't support 24-bit WAV.
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=864780
-    args = ['trim', '0s', str(samples)+'s']
-
-    SOX[wavname, '-b', '16', outname][args] & FG
-
-    # Convert to MP3.
-    mp3name = get_base_ext(outname)[0] + '.mp3'
-    SOX[wavname, '-C', '-0.01', mp3name][args] & FG
-
 
 LOOP_SECONDS = 0
 LOOP_SAMPLES = 0
@@ -92,6 +81,12 @@ class Looper:
         self.x2name = x2name
         self.outname = outname
 
+    def run(self):
+        loopdata = self.get_loop_data()
+        outname = self.generate_outname(loopdata)
+
+        self.render(self.loopEnd, outname)
+
     def get_loop_overlap(self):
         if LOOP_SECONDS:
             return self.sample_rate * LOOP_SECONDS
@@ -101,7 +96,7 @@ class Looper:
     def get_loop_data(self):
         # --|loop|loop
         #        a    b
-        #   ls   le
+        #   lsta lend
         self.sample_rate = sample_rate = get_rate(self.x1name)
 
         a = get_len(self.x1name)
@@ -116,20 +111,38 @@ class Looper:
 
         return [sample_rate, loopStart, loopEnd]
 
-    def trim(self, length, outname):
-        trim_as(self.x2name, outname, length)
+    def render(self, samples, outname):
+        wavname = self.x2name
+
+        # BUG: Firefox currently doesn't support 24-bit WAV.
+        # https://bugzilla.mozilla.org/show_bug.cgi?id=864780
+        # TODO: Firefox bug is resolved. Should we use 24?
+        args = ['trim', '0s', str(samples) + 's']
+
+        SOX[wavname, '-b', '16', outname][args] & FG
+
+        # Convert to Ogg.
+        # BUG: Chrome current'y doesn't support WebAudio Opus.
+        # https://bugs.chromium.org/p/chromium/issues/detail?id=482934
+        # Oh, and sox also doesn't support opus.
+
+        # -1=bad, 10=good
+        # default=3 = 112kbps
+
+        oggname = get_base_ext(outname)[0] + '.ogg'
+        loggname = get_base_ext(outname)[0] + '.logg'
+        SOX[wavname, '-C', '6',
+            '--add-comment', 'LOOP_START=%s' % self.loopStart,
+            '--add-comment', 'LOOP_END=%s' % self.loopEnd,
+            oggname][args] & FG
+
+        os.rename(oggname, loggname)
 
     def generate_outname(self, loopdata):
         base, ext = get_base_ext(self.outname)
 
         return '.'.join([base] + [str(s) for s in loopdata] + [ext])
 
-    def run(self):
-        loopdata = self.get_loop_data()
-
-        outname = self.generate_outname(loopdata)
-
-        self.trim(self.loopEnd, outname)
 
 
 class MainApp(cli.Application):

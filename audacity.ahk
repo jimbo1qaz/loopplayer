@@ -15,6 +15,7 @@
 
 
 zeropad(num, size) {
+	num := trim(num, " `t`n")
 	prefix := ""
 	; msgbox % "zeropad strlen " . strlen(num)
 	loop % (size - strlen(num)) {

@@ -85,16 +85,14 @@ def smp(n):
     return '=%ss' % n
 
 
-LOOP_SECONDS = 0
-LOOP_SAMPLES = 0
-
 
 class Looper:
-    def get_loop_overlap(self):
-        if LOOP_SECONDS:
-            return self.sample_rate * LOOP_SECONDS
-        else:
-            return LOOP_SAMPLES
+    def get_loop_overlap(self, sample_rate):
+        # if LOOP_SECONDS:
+        #     return self.sample_rate * LOOP_SECONDS
+        # else:
+        #     return LOOP_SAMPLES
+        return sample_rate * self.LOOP_SECONDS
 
     def get_loop_data(self):
         """ Initializes and returns sample_rate, loopStart, and loopEnd. """
@@ -108,7 +106,7 @@ class Looper:
 
         loop_len = b - a
 
-        overlap = self.get_loop_overlap()
+        overlap = self.get_loop_overlap(sample_rate)
 
         loopStart = a - loop_len + overlap
         loopEnd = a + overlap
@@ -122,10 +120,14 @@ class Looper:
         return self.out_base + ext
 
 
-    def __init__(self, x1name, x2name, title):
+    def __init__(self, x1name, x2name, title, padding):
         self.x1name = x1name
         self.x2name = x2name
         self.title = title
+
+        self.LOOP_SECONDS = padding
+        # self.LOOP_SAMPLES = 0
+
 
         loopdata = self.get_loop_data()
         [self.sample_rate, self.loopStart, self.loopEnd] = loopdata
@@ -228,6 +230,7 @@ class Looper:
             ,
             total_seconds, CAT_TXT, total_seconds   # FIXME why total_seconds twice?
                                                     # FIXME ffmpeg lacks AAC length field?
+                                                    # TODO is m4a fixed?
         )][
             '-af', 'afade = t=out: st=%s: d=%s: curve=%s'
             % (total_seconds - fadeout, fadeout, curve)
@@ -240,8 +243,9 @@ class LooperApp(cli.Application):
     extend = cli.Flag(["-e", "--extend"], help="Extend the file, as well as looping.")
     extend_only = cli.Flag(["-E", "--extend-only"], help="Extend the file, and skip logg file compression.")
 
-    def main(self, x1name, x2name, outname):
-        looper = Looper(x1name, x2name, outname)
+    def main(self, x1name, x2name, outname, padding=0):
+        padding = int(padding)
+        looper = Looper(x1name, x2name, outname, padding)
 
         compress = True
         if self.extend_only:
@@ -250,7 +254,7 @@ class LooperApp(cli.Application):
         looper.loopify(compress=compress)
 
         if self.extend or self.extend_only:
-            looper.extend(1800, extension='aac', codec='-c:a libfdk_aac -cutoff 20000 -vbr 5')
+            looper.extend(1800, extension='m4a', codec='-c:a libfdk_aac -cutoff 20000 -vbr 5')
             # "Note, the VBR setting is unsupported and only works with some parameter combinations"
             # https://hydrogenaud.io/index.php/topic,95989.msg817833.html#msg817833
 

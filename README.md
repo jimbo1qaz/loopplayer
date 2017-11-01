@@ -4,6 +4,12 @@ loopplayer is a Web Audio player with sample-perfect looping. It is designed for
 
 loopplayer was born out of frustration with extended music Youtube videos. They take a very long time to render and upload, are extremely wasteful of space due to repeated video and audio, and don't loop forever for the watcher.
 
+For examples of loopplayer in action, see:
+
+* <https://jimbo1qaz.github.io/loopplayer/?file=sounds/chrono-revive.yaml>
+* https://jimbo1qaz.github.io/loopplayer/?file=sounds/sd3sister.yaml
+* https://jimbo1qaz.github.io/loopplayer/?file=sounds/ff6decisive.yaml
+
 ## Looping Files
 
 Use `loopify.py` to prepare sound files. For example, call `loopify 1x.wav 2x.wav out_title` . This will generate looped files `out.rate.start.end.wav` and `...logg`. The `logg` file includes loop point tags, allowing you to playback looped files locally, using foobar2000 or Winamp with vgmstream plugin.
@@ -31,4 +37,4 @@ Right now, only `url` and `title` are implemented. All other attributes are unim
 
 loopplayer supports Chrome, Firefox (may stutter on Windows), and Edge. It should work with Opera, due to using Webkit. It will not work on IE11, due to not supporting Web Audio API.
 
-*(1) The reason you need `samplerate` is because Web Audio was designed by a bunch of idiotic fucktards who provide absolutely no way whatsoever to determine the sample rate of a file, and I didn't want to parse the file using a separate library for such a simple requirement.*
+*(1) The reason you need `samplerate` is because Web Audio provides no way to determine the sample rate of a file, and I didn't want to parse the file using a separate library for such a simple requirement. I don't like decimal loop points, since they're inexact and could suffer from floating-point errors during calculation.*
